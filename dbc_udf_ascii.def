@@ -1,0 +1,472 @@
+###############################################################################
+# dbc_udf_ascii.def - DBC Event Handler for database stored as ascii file
+###############################################################################
+# 
+
+################################################################################
+#   This is the definition file for retrieving the UDFS from
+#   a flat file database 
+#
+#   The user does not need to know how the generic UG library mechanism 
+#   works in order to setup their UDF libraries using the dbc_udf_ascii.def file.
+#   In most cases, the user does not need to touch this file, for NX will set this
+#   file up automatically for the user. Therefore, the user does not need to know
+#   the definitions of these keywords in order to use UDF. In case there is a 
+#   need to manually edit this file (usually add a new class), simply following 
+#   the textual format is enough from the usage point of view:
+#        CLASS xxx
+#        {
+#            TYPE xxx
+#            QUERY "[DB(udf_lib_name)] &= [xxx]"
+#            FILE "$UGII_UDF_LIBRARY_DIR"
+#            DIALOG udf_name
+#            RSET udf_file_name
+#        }
+#   The above structure can be nested. 
+#   xxx:
+#      It is a unique UDF library name, and it must follow the standard C programming 
+#      language naming rules. Identical names must be used in three entries.
+#   CLASS:
+#      It a keyword that can be nested to define the class hierarchy for the Library 
+#      Class Selection Dialog.
+#   TYPE: 
+#      This is an internal parameter and cannot be changed.
+#   QUERY: 
+#      In this line you designate whether this entry will be a type or a subclass. For a 
+#      type, the parameter would read:
+#           "[DB(Type)] == [xx]", 
+#      where xx is the Library type number found in the mapping table. 
+#      For a subtype, the parameter is:
+#           "[DB(SubType)] == [xx]", 
+#      where xx is the Library subtype number found in the mapping table. 
+#      If you are using Teamcenter Engineering as your database, xx is the class id of 
+#      the class you create in the Classification Administration Module. 
+#      See online help (Manufacturing -> Manufacturing General -> NX Library -> 
+#      Customizing NX Library -> Configuring the Dialogs) for more information.
+#   FILE:
+#      This refers to the graphic for icons that appear in the search criteria and 
+#      search result dialogs. If you wish to include your own graphics, you must 
+#      specify the complete path information to the graphic. These graphics must 
+#      use the .bmp format.
+#   DIALOG:
+#      This is the list of DB_ALIASes that appear in the Search Criteria dialog. This 
+#      is where you must add the attribute descriptions (DB_ALIASes) which should 
+#      appear in the Search Criteria dialog.
+#   RSET:
+#      This is the list of attributes (DB_ALIASes) that appear in the Search
+#      Results dialog. This is where you must add an attribute (DB_ALIAS) to
+#      have it appear in that dialog.
+#   Note that the entries "DIALOG" and "RSET" in a Class in the file dbc_udf_ascii.def
+#   come from the generic definition of a UG library structure. Just because UDF library
+#   mechanism uses the same format as a generic UG library mechanism, these two entries
+#   are visible in the dbc_udf_ascii.def. As far as UDFs are concerned, one need not
+#   worry about these. Typically the UG/Library mechanism supports searching for data
+#   in external systems (e.g., a database, a text file or Teamcenter).
+#   The programming interface provides different dialog to support this:
+#      1. Browse a classification hierarchy - For UDFs, it is the class hierarchy.
+#      2. Search in a selected class for specific objects based on attributes - In
+#         case of UDFs it is searching for a specific UDF in a Class.
+#      3. Present a table view of the matching objects, where the user can select one
+#         or multiple instances - This is not used for UDFs.
+#   These three dialogs are called:
+#      1. Library Class Selection Dialog - The UDF class dialog.
+#      2. Search Criteria Dialog - Not used for UDFs.
+#      3. Search Result Dialog - Not used for UDFs.
+#   The Search Criteria Dialog and Search Result Dialog fields are used in CAM,
+#   for searching for tools in a CAM Database/Library.
+###############################################################################
+DB_PREFIX  "DB("
+DB_SUFFIX  ")"
+ESS_PREFIX "ESS("
+ESS_SUFFIX ")"
+
+
+###############################################################################
+#    The DB_ALIAS of the library reference. It is mandatory that this DB_ALIAS
+#    appears in the alias list
+#    
+###############################################################################
+
+################################################################################
+#    The list of DB_ALIAS
+#
+#    DB_ALIAS  <alias>
+#    {
+#         DB_ID       < identifier of the cutter parameter in a UG part file >
+#         DB_ID_TYPE  < Type of the identifier >
+#              d _ double
+#              i _ integer
+#              s _ string
+#    }
+#
+###############################################################################
+        DB_ALIAS  udf_name
+        {
+           DB_ID        0
+           DB_ID_TYPE   s
+           DIALOG_NAME "UDF Name"
+           RSET_NAME "UDF Name"
+        }
+
+        DB_ALIAS  udf_file_name
+        {
+           DB_ID        1
+           DB_ID_TYPE   s
+           DIALOG_NAME "UDF File Name"
+           RSET_NAME "UDF File Name"
+        }
+
+        DB_ALIAS  cgm_file_name
+        {
+           DB_ID        2
+           DB_ID_TYPE   s
+           DIALOG_NAME "CGM File Name"
+           RSET_NAME "CGM File Name"
+        }
+
+        DB_ALIAS  udf_lib_name
+        {
+           DB_ID        3
+           DB_ID_TYPE   s
+           DIALOG_NAME "Class Name"
+           RSET_NAME "Class Name"
+        }
+        DB_ALIAS  url_help
+        {
+           DB_ID        4
+           DB_ID_TYPE   s
+           DIALOG_NAME "Url Help"
+           RSET_NAME "Url Help"
+        }
+LIBREF udf_file_name
+
+#########################################################################
+#                      The Library Hierarchy                            #
+#########################################################################
+
+CLASS metric
+{
+    TYPE Metric
+    QUERY  "[DB(udf_lib_name)] &= [metric]"
+    FILE "$UGII_UDF_LIBRARY_DIR"
+    DIALOG udf_name
+    RSET udf_file_name
+
+    CLASS Fittings
+    {
+        TYPE Fittings
+        QUERY "[DB(udf_lib_name)] &= [Fittings]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+
+    CLASS Grooves
+    {
+        TYPE Grooves
+        QUERY "[DB(udf_lib_name)] &= [Grooves]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+
+        CLASS Retaining_Rings
+        {
+            TYPE Retaining_Rings
+            QUERY "[DB(udf_lib_name)] &= [Retaining_Rings]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+        CLASS Seals
+        {
+            TYPE Seals
+            QUERY "[DB(udf_lib_name)] &= [Seals]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+        CLASS O_Rings
+        {
+            TYPE O_Rings
+            QUERY "[DB(udf_lib_name)] &= [O_Rings]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+    }
+
+    CLASS Involute_Splines
+    {
+        TYPE Involute_Splines
+        QUERY "[DB(udf_lib_name)] &= [Involute_Splines]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+
+    }
+
+    CLASS Standard_Holes
+    {
+        TYPE Standard_Holes
+        QUERY "[DB(udf_lib_name)] &= [Standard_Holes]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+
+        CLASS Tapered
+        {
+            TYPE Tapered
+            QUERY "[DB(udf_lib_name)] &= [Tapered]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+        CLASS Slotted
+        {
+            TYPE Slotted
+            QUERY "[DB(udf_lib_name)] &= [Slotted]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+        CLASS Counter_Sunk
+        {
+            TYPE Counter_Sunk
+            QUERY "[DB(udf_lib_name)] &= [Counter_Sunk]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+        CLASS Counter_Bore
+        {
+            TYPE Counter_Bore
+            QUERY "[DB(udf_lib_name)] &= [Counter_Bore]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+    }
+
+    CLASS Stiffeners
+    {
+        TYPE Stiffeners
+        QUERY "[DB(udf_lib_name)] &= [Stiffeners]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+
+        CLASS Ribs
+        {
+            TYPE Ribs
+            QUERY "[DB(udf_lib_name)] &= [Ribs]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+    }
+    
+    CLASS 2dmwiz_sketch
+    {
+        TYPE 2dmwiz_sketch
+        QUERY "[DB(udf_lib_name)] &= [2dmwiz_sketch]"
+        FILE "$UG_VPACK_DIR\udf"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+    
+    CLASS gdrpwiz_glass_channel_metric
+    {
+        TYPE gdrpwiz_glass_channel_metric
+        QUERY "[DB(udf_lib_name)] &= [gdrpwiz_glass_channel_metric]"
+        FILE "$UGBODYDES_DIR\udf"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+
+    CLASS bpilwiz_tool_sketch_metric
+    {
+        TYPE bpilwiz_tool_sketch_metric
+        QUERY "[DB(udf_lib_name)] &= [bpilwiz_tool_sketch_metric]"
+        FILE "$UGBODYDES_DIR\udf"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+
+    CLASS bpilwiz_cross_section_metric
+    {
+        TYPE bpilwiz_cross_section_metric
+        QUERY "[DB(udf_lib_name)] &= [bpilwiz_cross_section_metric]"
+        FILE "$UGBODYDES_DIR\udf"
+        DIALOG udf_name
+        RSET udf_file_name
+    } 
+    
+}
+
+CLASS english
+{
+    TYPE English
+    QUERY  "[DB(udf_lib_name)] &= [english]"
+    FILE "$UGII_UDF_LIBRARY_DIR"
+    DIALOG udf_name
+    RSET udf_file_name
+
+    CLASS Fittings
+    {
+        TYPE Fittings
+        QUERY "[DB(udf_lib_name)] &= [Fittings]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+
+    CLASS Grooves
+    {
+        TYPE Grooves
+        QUERY "[DB(udf_lib_name)] &= [Grooves]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+
+        CLASS Retaining_Rings
+        {
+            TYPE Retaining_Rings
+            QUERY "[DB(udf_lib_name)] &= [Retaining_Rings]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+        CLASS Seals
+        {
+            TYPE Seals
+            QUERY "[DB(udf_lib_name)] &= [Seals]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+        CLASS O_Rings
+        {
+            TYPE O_Rings
+            QUERY "[DB(udf_lib_name)] &= [O_Rings]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+    }
+
+    CLASS Involute_Splines
+    {
+        TYPE Involute_Splines
+        QUERY "[DB(udf_lib_name)] &= [Involute_Splines]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+
+    CLASS Standard_Holes
+    {
+        TYPE Standard_Holes
+        QUERY "[DB(udf_lib_name)] &= [Standard_Holes]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+
+        CLASS Tapered
+        {
+            TYPE Tapered
+            QUERY "[DB(udf_lib_name)] &= [Tapered]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+        CLASS Slotted
+        {
+            TYPE Slotted
+            QUERY "[DB(udf_lib_name)] &= [Slotted]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+        CLASS Counter_Sunk
+        {
+            TYPE Counter_Sunk
+            QUERY "[DB(udf_lib_name)] &= [Counter_Sunk]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+
+        CLASS Counter_Bore
+        {
+            TYPE Counter_Bore
+            QUERY "[DB(udf_lib_name)] &= [Counter_Bore]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+    }
+
+    CLASS Stiffeners
+    {
+        TYPE Stiffeners
+        QUERY "[DB(udf_lib_name)] &= [Stiffeners]"
+        FILE "$UGII_UDF_LIBRARY_DIR"
+        DIALOG udf_name
+        RSET udf_file_name
+
+        CLASS Ribs
+        {
+            TYPE Ribs
+            QUERY "[DB(udf_lib_name)] &= [Ribs]"
+            FILE "$UGII_UDF_LIBRARY_DIR"
+            DIALOG udf_name
+            RSET udf_file_name
+        }
+    }
+
+    CLASS 2dmwiz_sketch
+    {
+        TYPE 2dmwiz_sketch
+        QUERY "[DB(udf_lib_name)] &= [2dmwiz_sketch]"
+        FILE "$UG_VPACK_DIR\udf"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+
+    CLASS gdrpwiz_glass_channel_english
+    {
+        TYPE gdrpwiz_glass_channel_english
+        QUERY "[DB(udf_lib_name)] &= [gdrpwiz_glass_channel_english]"
+        FILE "$UGBODYDES_DIR\udf"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+    CLASS bpilwiz_tool_sketch_english
+    {
+        TYPE bpilwiz_tool_sketch_english
+        QUERY "[DB(udf_lib_name)] &= [bpilwiz_tool_sketch_english]"
+        FILE "$UGBODYDES_DIR\udf"
+        DIALOG udf_name
+        RSET udf_file_name
+    }
+
+    CLASS bpilwiz_cross_section_english
+    {
+        TYPE bpilwiz_cross_section_english
+        QUERY "[DB(udf_lib_name)] &= [bpilwiz_cross_section_english]"
+        FILE "$UGBODYDES_DIR\udf"
+        DIALOG udf_name
+        RSET udf_file_name
+    }    
+}
+
+
